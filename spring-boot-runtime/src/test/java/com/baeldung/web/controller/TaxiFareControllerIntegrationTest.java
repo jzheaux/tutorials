@@ -1,20 +1,22 @@
 package com.baeldung.web.controller;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-
+import com.baeldung.web.log.app.Application;
+import com.baeldung.web.log.data.TaxiRide;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.baeldung.web.log.app.Application;
-import com.baeldung.web.log.data.TaxiRide;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = { Application.class, TaxiFareControllerIntegrationTest.SecurityConfig.class }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TaxiFareControllerIntegrationTest {
     
     @LocalServerPort
@@ -30,6 +32,18 @@ public class TaxiFareControllerIntegrationTest {
           URL + "/taxifare/calculate/", 
           taxiRide, String.class);
       
-        //assertThat(fare, equalTo("200"));
+        assertThat(fare, equalTo("200"));
+    }
+
+    @Configuration
+    static class SecurityConfig extends WebSecurityConfigurerAdapter {
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http
+                .authorizeRequests()
+                    .anyRequest().permitAll()
+                    .and()
+                .csrf().disable();
+        }
     }
 }
